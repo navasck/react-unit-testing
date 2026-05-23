@@ -22,7 +22,7 @@ describe('App integration', () => {
     await user.type(screen.getByRole('textbox', { name: 'task input' }), 'Read a book')
     await user.click(screen.getByRole('button', { name: 'Add' }))
 
-    expect(screen.getByTestId('count-display')).toHaveTextContent('Count: 1')
+    expect(screen.getByTestId('count-display')).toHaveTextContent('1')
     expect(screen.getByText('Read a book')).toBeInTheDocument()
   })
 })
