@@ -101,7 +101,7 @@ npm install --save-dev jsdom
 | `afterAll()` | Runs once after all tests |
 | `vi.fn()` | Creates mock function in Vitest |
 | `jest.fn()` | Creates mock function in Jest |
-| `vi.mock()` | Mocks modules/functions in Vitest |
+| `vi.mock()` | Mocks modules/functions in Vitest | vi.spyOn(object, 'methodName')
 | `jest.mock()` | Mocks modules/functions in Jest |
 | `spyOn()` | Watches/mock existing function behavior |
 | `mockReturnValue()` | Returns fixed mock value |

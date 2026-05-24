@@ -1,33 +1,35 @@
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import Counter from '../../components/Counter'
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import Counter from "../../components/Counter";
 
-describe('Counter', () => {
-  it('starts at 0', () => {
-    render(<Counter />)
-    expect(screen.getByTestId('count-display')).toHaveTextContent('0')
-  })
+describe("Counter", () => {
+  it("starts at 0", () => {
+    render(<Counter />);
+    expect(screen.getByTestId("count-display")).toHaveTextContent("0");
+  });
 
-  it('increments the count', async () => {
-    const user = userEvent.setup()
-    render(<Counter />)
-    await user.click(screen.getByRole('button', { name: 'Increment' }))
-    expect(screen.getByTestId('count-display')).toHaveTextContent('1')
-  })
+  it("increments the count", async () => {
+    //Creates a user interaction instance
+    const user = userEvent.setup();
+    render(<Counter />);
+    // awaited Because userEvent simulates real browser behavior asynchronously.
+    await user.click(screen.getByRole("button", { name: "Increment" }));
+    expect(screen.getByTestId("count-display")).toHaveTextContent("1");
+  });
 
-  it('decrements the count', async () => {
-    const user = userEvent.setup()
-    render(<Counter />)
-    await user.click(screen.getByRole('button', { name: 'Decrement' }))
-    expect(screen.getByTestId('count-display')).toHaveTextContent('-1')
-  })
+  it("decrements the count", async () => {
+    const user = userEvent.setup();
+    render(<Counter />);
+    await user.click(screen.getByRole("button", { name: "Decrement" }));
+    expect(screen.getByTestId("count-display")).toHaveTextContent("-1");
+  });
 
-  it('resets the count to 0', async () => {
-    const user = userEvent.setup()
-    render(<Counter />)
-    await user.click(screen.getByRole('button', { name: 'Increment' }))
-    await user.click(screen.getByRole('button', { name: 'Increment' }))
-    await user.click(screen.getByRole('button', { name: 'Reset' }))
-    expect(screen.getByTestId('count-display')).toHaveTextContent('0')
-  })
-})
+  it("resets the count to 0", async () => {
+    const user = userEvent.setup();
+    render(<Counter />);
+    await user.click(screen.getByRole("button", { name: "Increment" }));
+    await user.click(screen.getByRole("button", { name: "Increment" }));
+    await user.click(screen.getByRole("button", { name: "Reset" }));
+    expect(screen.getByTestId("count-display")).toHaveTextContent("0");
+  });
+});

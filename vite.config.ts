@@ -14,3 +14,25 @@ export default defineConfig({
     },
   },
 })
+
+
+
+
+// test: {
+//   globals: true,
+// }
+
+// So Vitest automatically makes these globally available:
+
+// describe
+// it
+// test
+// expect
+// vi
+// beforeEach
+// afterEach
+// beforeAll
+// afterAll
+
+// this will works without import:
+//In Vitest, when globals: true is enabled in the configuration, methods like describe, it, expect, and vi become globally available, so we do not need to import them manually in each test file.
