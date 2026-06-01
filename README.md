@@ -152,6 +152,52 @@ npm install --save-dev jsdom
 | `userEvent.click()` | Simulates real click interaction |
 | `userEvent.type()` | Simulates typing |
 | `waitFor()` | Waits for async updates |
+| `renderHook()` | Renders a custom hook in isolation without a component |
+| `act()` | Wraps state-updating calls so React flushes updates before assertions |
+
+### `renderHook` — usage
+
+```ts
+import { renderHook, act } from '@testing-library/react'
+import useCounter from '../hooks/useCounter'
+
+const { result } = renderHook(() => useCounter(0))
+
+// result.current holds the hook's return value
+expect(result.current.count).toBe(0)
+
+// wrap any call that triggers a state update in act()
+act(() => result.current.increment())
+expect(result.current.count).toBe(1)
+```
+
+| Property / Method | Description |
+|---|---|
+| `result.current` | The latest return value of the hook |
+| `rerender()` | Re-renders the hook with new arguments |
+| `unmount()` | Unmounts the hook (useful for cleanup tests) |
+
+### `act` — usage
+
+```ts
+// single state update
+act(() => result.current.increment())
+
+// multiple updates batched together
+act(() => {
+  result.current.increment()
+  result.current.increment()
+  result.current.reset()
+})
+
+// async state update (e.g. after a fetch)
+await act(async () => {
+  result.current.fetchData()
+})
+```
+
+> `act()` ensures React processes all state updates and effects before you run `expect()`.
+> Without it, assertions may read stale values.
 
 ---
 
@@ -174,7 +220,7 @@ npm install --save-dev jsdom
 
 
 
-## 🎯 Good next steps that cover real-world testing patterns:
+## 🎯 steps that we covered  (real-world testing patterns):
 
 
 1. Async API Fetch component
