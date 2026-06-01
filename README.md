@@ -170,3 +170,23 @@ npm install --save-dev jsdom
 | `toHaveClass()` | Checks class name |
 | `toHaveValue()` | Checks input value |
 | `toBeChecked()` | Checks checkbox/radio state |
+
+
+
+
+## 🎯 Good next steps that cover real-world testing patterns:
+
+
+1. Async API Fetch component
+A component that fetches data — tests loading state, success state, error state, and API mocking with vi.mock() / vi.fn(). This is the most common real-world scenario missing from the current setup.
+
+2. Form with validation
+A multi-field form (name, email, password) with inline error messages. Tests: required field errors, email format, submit disabled until valid — covers userEvent.type, userEvent.tab, and form submission patterns.
+
+3. Custom Hook with renderHook
+Extract counter or todo logic into a useCounter / useTodos hook and test the hook in isolation using renderHook from RTL — shows how to test logic separately from UI.
+
+4. Context API
+A theme or auth context provider wrapping components — tests that children receive context values correctly and respond to context changes.
+
+Recommended starting point: Async API Fetch — it introduces the most new concepts at once:
