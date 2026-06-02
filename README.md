@@ -110,6 +110,34 @@ npm install --save-dev jsdom
 | `clearAllMocks()` | Clears mock history |
 | `resetAllMocks()` | Resets mocks completely |
 | `restoreAllMocks()` | Restores original implementation |
+| `vi.useFakeTimers()` | Replaces `setTimeout`/`setInterval`/`Date` with controllable fakes |
+| `vi.useRealTimers()` | Restores real native timers (call in `afterEach`) |
+| `vi.advanceTimersByTime(ms)` | Fast-forwards all pending timers by `ms` milliseconds |
+| `vi.runAllTimers()` | Immediately runs all pending timers to completion |
+
+### ⏱️ Fake Timers — usage
+
+```ts
+beforeEach(() => vi.useFakeTimers())
+afterEach(() => vi.useRealTimers())
+
+it('debounce fires after delay', () => {
+  render(<SearchFilter />)
+  fireEvent.change(input, { target: { value: 'mango' } })
+
+  // timer hasn't fired yet
+  expect(screen.getAllByRole('listitem')).toHaveLength(15)
+
+  // fast-forward past the debounce delay — wrapped in act() because
+  // advancing timers triggers React state updates
+  act(() => vi.advanceTimersByTime(500))
+
+  expect(screen.getByText('Mango')).toBeInTheDocument()
+})
+```
+
+> Use `fireEvent.change` instead of `userEvent.type` when fake timers are active.
+> `userEvent.setup()` uses internal async machinery that deadlocks with `vi.useFakeTimers()`.
 
 ---
 
@@ -148,7 +176,9 @@ npm install --save-dev jsdom
 | `screen.getByTestId()` | Finds element by `data-testid` attribute |
 | `screen.queryByText()` | Returns null if not found |
 | `screen.findByText()` | Async element search |
-| `fireEvent()` | Simulates DOM events |
+| `fireEvent()` | Simulates DOM events (synchronous — safe with fake timers) |
+| `fireEvent.change()` | Synchronously sets input value — use over `userEvent` when fake timers are active |
+| `fireEvent.click()` | Synchronously fires a click event |
 | `userEvent.click()` | Simulates real click interaction |
 | `userEvent.type()` | Simulates typing |
 | `waitFor()` | Waits for async updates |

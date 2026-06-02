@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useTheme } from './context/ThemeContext'
 import Counter from './components/Counter'
+import SearchFilter from './components/SearchFilter'
 import TodoList from './components/TodoList'
 import UserList from './components/UserList'
 import FormValidation from './components/FormValidation'
@@ -21,6 +22,7 @@ function App() {
           Testing Playground
         </h1>
         <Counter />
+        <SearchFilter />
         <TodoList />
         <section aria-label="users" className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Users</h2>
