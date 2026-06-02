@@ -48,6 +48,12 @@ function Modal({ isOpen, onClose, title, children }: Props) {
     if (!isOpen || !dialogRef.current) return
     const dialog = dialogRef.current
 
+
+// This function is implementing two accessibility features:
+
+// Close modal on Escape
+// Trap keyboard focus inside the modal
+//This code implements a focus trap. When the user presses Tab on the last focusable element, focus is moved back to the first element. When the user presses Shift+Tab on the first focusable element, focus is moved to the last element. This creates a circular focus loop, ensuring keyboard users cannot tab outside the modal while it is open. The same handler also closes the modal when the Escape key is pressed.
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         e.preventDefault()
@@ -65,6 +71,7 @@ function Modal({ isOpen, onClose, title, children }: Props) {
       const first = focusable[0]
       const last  = focusable[focusable.length - 1]
 
+      //Infinite loop inside modal. If Tab is pressed on the last focusable element, move focus to the first. If Shift+Tab is pressed on the first focusable element, move focus to the last. This ensures that keyboard users can only navigate within the modal while it is open.
       if (e.shiftKey) {
         // Shift+Tab on first element → jump to last
         if (document.activeElement === first) {
@@ -154,3 +161,47 @@ export default Modal
 
 
 // This modal uses React Portal to avoid stacking-context issues, implements proper accessibility with role="dialog" and ARIA attributes, restores focus to the triggering element, traps keyboard focus within the dialog, supports Escape key closing, and locks body scrolling. For large-scale applications, I would further extract focus management, keyboard handling, and scroll locking into reusable hooks to improve maintainability and testability.
+
+
+
+// When implementing a modal, these are the key accessibility requirements we should follow:
+
+// 1. Use Proper Dialog Semantics
+// 2. Provide an Accessible Name   -  aria-labelledby
+// 3. Provide a Description (Optional but Recommended)  -  aria-describedby
+// 4. Move Focus Into the Modal on Open, Keyboard users should immediately be inside the modal.
+// 5. Trap Focus Inside the Modal
+// 6. Restore Focus on Close
+// 7. Support Escape Key
+// 8. Provide a Visible Close Button  
+// 9. Prevent Background Scrolling, Prevent Background Interaction
+// 10. Ensure Sufficient Color Contrast
+// 11. Test with Screen Readers and Keyboard Only
+// 12. Maintain Correct Heading Structure
+// 13. Ensure Keyboard Accessibility (Tab, Shift + Tab, Enter, Space, Escape)
+// 14. Use Semantic Buttons
+// 15. Backdrop Should Not Be Focusable
+// 16. Test with Accessibility Tools (WAVE Web Accessibility Evaluation Tool, Keyboard-only testing, Lighthouse, Screen reader testing (e.g. NVDA))
+
+// ─── Rendering ────────────────────────────────────────────────────────────────
+
+
+// Tech Lead Checklist
+
+// Before shipping a modal, verify:
+
+// ✅ role="dialog"
+// ✅ aria-modal="true"
+// ✅ aria-labelledby
+// ✅ aria-describedby (if needed)
+// ✅ Focus moves into modal on open
+// ✅ Focus trap implemented
+// ✅ Focus restored on close
+// ✅ Escape closes modal
+// ✅ Close button exists
+// ✅ Background interaction blocked
+// ✅ Body scroll locked
+// ✅ Keyboard navigation works
+// ✅ Proper heading structure
+
+
