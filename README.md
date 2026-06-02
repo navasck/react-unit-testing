@@ -236,3 +236,192 @@ Extract counter or todo logic into a useCounter / useTodos hook and test the hoo
 A theme or auth context provider wrapping components — tests that children receive context values correctly and respond to context changes.
 
 Recommended starting point: Async API Fetch — it introduces the most new concepts at once:
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 📖 Storybook
+
+> Storybook is a tool for building and testing UI components in isolation — outside the full app. Each **story** represents a specific state of a component.
+
+---
+
+### ⚙️ Setup
+
+```bash
+# Initialize Storybook (auto-detects Vite + React)
+npx storybook@latest init --yes
+
+# Start dev server
+npm run storybook          # opens at http://localhost:6006
+
+# Build static site
+npm run build-storybook
+```
+
+---
+
+### 📁 Project Structure
+
+```
+.storybook/
+├── main.ts          ← addons, framework, story glob pattern
+└── preview.tsx      ← global decorators, CSS import, parameters
+
+src/stories/
+├── Counter.stories.tsx
+├── TodoList.stories.tsx
+├── FormValidation.stories.tsx
+├── UserList.stories.tsx
+└── ThemeToggle.stories.tsx
+```
+
+---
+
+### 🧩 Story File Structure
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import Counter from '../components/Counter'
+
+// Meta — defines the component and shared config
+const meta: Meta<typeof Counter> = {
+  title: 'Components/Counter',   // sidebar path
+  component: Counter,
+  tags: ['autodocs'],            // auto-generates a docs page
+}
+export default meta
+
+type Story = StoryObj<typeof Counter>
+
+// Each named export = one story (one component state)
+export const Default: Story = {}
+```
+
+---
+
+### 🎭 play — Simulate User Interactions
+
+```tsx
+import { userEvent, within } from '@storybook/test'
+
+export const AfterIncrement: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'Increment' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Increment' }))
+  },
+}
+```
+
+> `play` runs after the story renders — drives it into a specific state using the same `userEvent` API as your unit tests.
+
+---
+
+### 🔄 beforeEach — Mock APIs per Story
+
+```tsx
+import { vi } from '@storybook/test'
+
+export const Success: Story = {
+  beforeEach() {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => mockUsers,
+    } as Response)
+    return () => vi.restoreAllMocks()   // cleanup after story
+  },
+}
+
+export const NetworkError: Story = {
+  beforeEach() {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network error'))
+    return () => vi.restoreAllMocks()
+  },
+}
+```
+
+---
+
+### 🎨 decorators — Wrap Stories with Providers
+
+```tsx
+// Per-component (applies to all stories in the file)
+const meta: Meta<typeof ThemeToggle> = {
+  decorators: [
+    (Story) => (
+      <ThemeProvider>
+        <Story />
+      </ThemeProvider>
+    ),
+  ],
+}
+
+// Per-story (overrides the meta decorator)
+export const DarkTheme: Story = {
+  decorators: [
+    (Story) => (
+      <ThemeProvider defaultTheme="dark">
+        <Story />
+      </ThemeProvider>
+    ),
+  ],
+}
+```
+
+---
+
+### 🌍 preview.tsx — Global Config
+
+```tsx
+/// <reference types="vite/client" />
+import type { Preview } from '@storybook/react-vite'
+import '../src/index.css'          // import global styles
+
+const preview: Preview = {
+  parameters: {
+    layout: 'centered',            // center all stories on canvas
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/i,
+      },
+    },
+  },
+}
+export default preview
+```
+
+---
+
+### 🚀 NPM Scripts
+
+```bash
+npm run storybook        # dev server at localhost:6006
+npm run build-storybook  # static build
+npm run test:all         # unit tests + Storybook interaction tests
+```
+
+---
+
+### 🔑 Key Concepts
+
+| Concept | Description |
+|---|---|
+| `Meta` | Defines the component, title, tags, shared decorators |
+| `StoryObj` | Type for individual story objects |
+| `tags: ['autodocs']` | Auto-generates a documentation page |
+| `play()` | Runs user interactions after the story renders |
+| `beforeEach()` | Sets up mocks before each story renders |
+| `decorators` | Wraps stories with providers or layout |
+| `within(canvasElement)` | Scopes queries to the story's canvas |
+| `parameters.layout` | `'centered'`, `'fullscreen'`, or `'padded'` |

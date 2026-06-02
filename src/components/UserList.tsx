@@ -9,13 +9,17 @@ type User = {
 
 type Status = 'loading' | 'success' | 'error'
 
-function UserList() {
+type Props = {
+  fetchFn?: typeof fetch
+}
+
+function UserList({ fetchFn = fetch }: Props) {
   const [users, setUsers] = useState<User[]>([])
   const [status, setStatus] = useState<Status>('loading')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/users')
+    fetchFn('https://jsonplaceholder.typicode.com/users')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch users')
         return res.json()
@@ -28,7 +32,7 @@ function UserList() {
         setError(err.message)
         setStatus('error')
       })
-  }, [])
+  }, [fetchFn])
 
   if (status === 'loading') {
     return (
