@@ -1,106 +1,114 @@
-import { useEffect, useRef, useId } from 'react'
-import { createPortal } from 'react-dom'
-
+import { useEffect, useLayoutEffect, useRef, useId } from "react";
+import { createPortal } from "react-dom";
 
 // Finds all keyboard-reachable elements inside the dialog for the trap
 const FOCUSABLE_SELECTORS = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
   '[tabindex]:not([tabindex="-1"])',
-].join(',')
+].join(",");
 
 type Props = {
-  isOpen: boolean
-  onClose: () => void
-  title: string
-  children: React.ReactNode
-}
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+};
 
 function Modal({ isOpen, onClose, title, children }: Props) {
-  const titleId   = useId()
-  const descId    = useId()
-  const dialogRef = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLElement | null>(null)
+  const titleId = useId();
+  const descId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
-  // Focus Restoration
-  // WCAG compliant modal dialogs should return focus to the element that triggered them when they close. This is important for keyboard and screen reader users to maintain context. We save the currently focused element when the modal opens, and restore focus to it when the modal closes.
-  // Save the element that triggered the modal so focus returns to it on close
-  useEffect(() => {
+  // useLayoutEffect — runs synchronously before the browser paints.
+  // Saving activeElement and restoring focus must happen before the modal
+  // appears / disappears so there is no frame where focus is misplaced.
+  useLayoutEffect(() => {
     if (isOpen) {
-      triggerRef.current = document.activeElement as HTMLElement
+      triggerRef.current = document.activeElement as HTMLElement;
     } else {
-      triggerRef.current?.focus()
+      triggerRef.current?.focus();
     }
-  }, [isOpen])
+  }, [isOpen]);
 
-  // Auto-focus first focusable element inside dialog on open
-  useEffect(() => {
-    if (!isOpen || !dialogRef.current) return
-    const first = dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)[0]
-    first?.focus()
-  }, [isOpen])
+  // useLayoutEffect — auto-focus fires before paint so the user never sees
+  // the modal without focus already inside it.
+  useLayoutEffect(() => {
+    if (!isOpen || !dialogRef.current) return;
+    const first =
+      dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)[0];
+    if (first) {
+      first.focus();
+    } else {
+      dialogRef.current.focus();
+    }
+  }, [isOpen]);
 
   // Focus trap + Escape key — both on same document keydown listener
   useEffect(() => {
-    if (!isOpen || !dialogRef.current) return
-    const dialog = dialogRef.current
+    if (!isOpen || !dialogRef.current) return;
+    const dialog = dialogRef.current;
 
+    // This function is implementing two accessibility features:
 
-// This function is implementing two accessibility features:
-
-// Close modal on Escape
-// Trap keyboard focus inside the modal
-//This code implements a focus trap. When the user presses Tab on the last focusable element, focus is moved back to the first element. When the user presses Shift+Tab on the first focusable element, focus is moved to the last element. This creates a circular focus loop, ensuring keyboard users cannot tab outside the modal while it is open. The same handler also closes the modal when the Escape key is pressed.
+    // Close modal on Escape
+    // Trap keyboard focus inside the modal
+    //This code implements a focus trap. When the user presses Tab on the last focusable element, focus is moved back to the first element. When the user presses Shift+Tab on the first focusable element, focus is moved to the last element. This creates a circular focus loop, ensuring keyboard users cannot tab outside the modal while it is open. The same handler also closes the modal when the Escape key is pressed.
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        onClose()
-        return
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
       }
 
-      if (e.key !== 'Tab') return
+      if (e.key !== "Tab") return;
 
       const focusable = Array.from(
-        dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)
-      )
-      if (!focusable.length) { e.preventDefault(); return }
+        dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS),
+      );
+      if (!focusable.length) {
+        e.preventDefault();
+        return;
+      }
 
-      const first = focusable[0]
-      const last  = focusable[focusable.length - 1]
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
 
       //Infinite loop inside modal. If Tab is pressed on the last focusable element, move focus to the first. If Shift+Tab is pressed on the first focusable element, move focus to the last. This ensures that keyboard users can only navigate within the modal while it is open.
       if (e.shiftKey) {
         // Shift+Tab on first element → jump to last
         if (document.activeElement === first) {
-          e.preventDefault()
-          last.focus()
+          e.preventDefault();
+          last.focus();
         }
       } else {
         // Tab on last element → jump to first
         if (document.activeElement === last) {
-          e.preventDefault()
-          first.focus()
+          e.preventDefault();
+          first.focus();
         }
       }
     }
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
-  // Scroll Lock
-  // Prevents background scrolling. This is important because if the background content scrolls while a modal is open, it can lead to a confusing user experience, especially for keyboard and screen reader users. By locking the scroll, we ensure that the user's focus remains on the modal content and that the background does not shift unexpectedly.
-  // Prevent body scroll while modal is open
-  useEffect(() => {
-    if (!isOpen) return
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen])
+  // useLayoutEffect — scroll lock applied before paint so the body never
+  // scrolls for even a single frame while the modal is visible.
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return createPortal(
     <>
@@ -115,6 +123,7 @@ function Modal({ isOpen, onClose, title, children }: Props) {
       {/* Dialog */}
       <div
         ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -152,17 +161,13 @@ function Modal({ isOpen, onClose, title, children }: Props) {
         </div>
       </div>
     </>,
-    document.body
-  )
+    document.body,
+  );
 }
 
-export default Modal
-
-
+export default Modal;
 
 // This modal uses React Portal to avoid stacking-context issues, implements proper accessibility with role="dialog" and ARIA attributes, restores focus to the triggering element, traps keyboard focus within the dialog, supports Escape key closing, and locks body scrolling. For large-scale applications, I would further extract focus management, keyboard handling, and scroll locking into reusable hooks to improve maintainability and testability.
-
-
 
 // When implementing a modal, these are the key accessibility requirements we should follow:
 
@@ -173,7 +178,7 @@ export default Modal
 // 5. Trap Focus Inside the Modal
 // 6. Restore Focus on Close
 // 7. Support Escape Key
-// 8. Provide a Visible Close Button  
+// 8. Provide a Visible Close Button
 // 9. Prevent Background Scrolling, Prevent Background Interaction
 // 10. Ensure Sufficient Color Contrast
 // 11. Test with Screen Readers and Keyboard Only
@@ -184,7 +189,6 @@ export default Modal
 // 16. Test with Accessibility Tools (WAVE Web Accessibility Evaluation Tool, Keyboard-only testing, Lighthouse, Screen reader testing (e.g. NVDA))
 
 // ─── Rendering ────────────────────────────────────────────────────────────────
-
 
 // Tech Lead Checklist
 
@@ -204,4 +208,4 @@ export default Modal
 // ✅ Keyboard navigation works
 // ✅ Proper heading structure
 
-
+// Use useLayoutEffect when the effect reads or mutates the DOM in a way visible to the user before the next paint — focus position, scroll position, element measurements. Use useEffect for everything else (data fetching, subscriptions, logging). In this modal, useLayoutEffect is used to manage focus and scroll locking so that there are no frames where the user sees the modal without focus or with background scroll.

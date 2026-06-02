@@ -7,6 +7,7 @@ import UserList from './components/UserList'
 import FormValidation from './components/FormValidation'
 import ThemeToggle from './components/ThemeToggle'
 import ModalDemo from './components/ModalDemo'
+import PostList from './components/PostList'
 
 function App() {
   const { theme } = useTheme()
@@ -33,6 +34,7 @@ function App() {
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6">Register</h2>
           <FormValidation />
         </section>
+        <PostList />
         <ModalDemo />
         <section aria-label="theme" className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6">Theme</h2>
